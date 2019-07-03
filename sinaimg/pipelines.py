@@ -33,4 +33,8 @@ class ImagesrenamePipeline(ImagesPipeline):
         print("========================================")
         for image_url in item['image_urls']:
             # 阻止服务器返回304
-            yield Request(image_url+'?v=3')
+            yield Request(image_url + '?v=3', meta={'item': item})
+
+    def file_path(self, request, response=None, info=None):
+        folder = request.meta['item']['folder_name']
+        return super().file_path(request, response, info).replace("full", folder)
