@@ -15,7 +15,8 @@ from sinaimg.spiders.config import Config
 
 
 class ImgSpider(scrapy.Spider):
-    name = 'meizitu'
+    config = Config()
+    name = 'ImgSpider'
     headers = {
         "Accept": "*/*"
         , "Accept-Encoding": "gzip, deflate, br"
@@ -29,18 +30,18 @@ class ImgSpider(scrapy.Spider):
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36"
         , "X-Requested-With": "XMLHttpRequest"
         ,
-        "Cookie": Config.get_cookie()
+        "Cookie": config.get_cookie()
     }
     custom_settings = {
         # 图片保存地址
-        "IMAGES_STORE": 'D:\爬虫图片'
+        "IMAGES_STORE": config.get_img_store()
     }
     base_url = "https://weibo.com/aj/v6/comment/big?ajwvr=6&id={}&page={}"
 
     # 文件夹名称
-    folder_name = "吊带背心"
+    folder_name = config.get_folder_name()
     # 评论地址
-    comment_url = "https://weibo.com/2926793073/HBEMKmVAu?type=comment"
+    comment_url = config.get_comment_url()
 
     def start_requests(self):
         self.write_url(self.custom_settings.get("IMAGES_STORE") + "\\" + self.folder_name, self.comment_url)
@@ -93,8 +94,12 @@ class ImgSpider(scrapy.Spider):
             f.write(url.encode())
 
 
-if __name__ == '__main__':
-    from scrapy import cmdline, Request
+def run():
+    from scrapy import cmdline
 
-    args = "scrapy crawl meizitu".split()
+    args = "scrapy crawl ImgSpider".split()
     cmdline.execute(args)
+
+
+if __name__ == '__main__':
+    run()
