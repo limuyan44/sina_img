@@ -5,9 +5,10 @@
 import json
 import os
 import re
-
 import requests
 import scrapy
+import time
+import random
 from lxml import etree
 
 from sinaimg.items import SinaImgItem
@@ -46,6 +47,9 @@ class ImgSpider(scrapy.Spider):
     def start_requests(self):
         self.write_url(self.custom_settings.get("IMAGES_STORE") + "\\" + self.folder_name, self.comment_url)
         id = self.get_comment_url()
+        if not id:
+            print("===============请更新cookie重新登录============")
+            return None
         url = self.base_url.format(id, '1')
         r = requests.get(url=url, headers=self.headers)
         if r.content:
@@ -55,6 +59,7 @@ class ImgSpider(scrapy.Spider):
             urls = []
             for i in range(1, totalpage + 1):
                 page_url = self.base_url.format(id, str(i))
+                time.sleep(random.uniform(1, 2))
                 response = requests.get(url=page_url, headers=self.headers)
                 html = json.loads(response.content.decode('utf-8'))
                 html_page = html['data']['html']
@@ -79,7 +84,12 @@ class ImgSpider(scrapy.Spider):
 
     def get_comment_url(self):
         r = requests.get(url=self.comment_url, headers=self.headers)
+        if r.status_code != 200:
+            print(r.content)
+            return None
         s = re.findall(r"act=(.+?)\\\"", r.content.decode('utf-8'))
+        if not s:
+            return None
         return s[0]
 
     def write_url(self, path, url):
